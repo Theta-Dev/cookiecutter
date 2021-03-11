@@ -71,7 +71,8 @@ def test_clone_should_abort_if_user_does_not_want_to_reclone(mocker, tmpdir):
     [
         (vcs.Git, 'https://github.com/hello/world.git', 'world'),
         (vcs.Hg, 'https://bitbucket.org/foo/bar', 'bar'),
-        (vcs.SVN, 'http://svn.apache.org/viewvc/xml/axkit/trunk/axkit.org/examples', 'examples'),
+        (vcs.SVN, 'http://svn.apache.org/viewvc/xml/axkit/trunk/axkit.org/examples',
+         'examples'),
         (vcs.Git, 'git@host:gitoliterepo', 'gitoliterepo'),
         (vcs.Git, 'git@gitlab.com:cookiecutter/cookiecutter.git', 'cookiecutter'),
         (vcs.Git, 'git@github.com:cookiecutter/cookiecutter.git', 'cookiecutter'),
@@ -105,14 +106,16 @@ def test_clone_should_invoke_vcs_command(
 
     if repo_class.cmd == 'svn':
         mock_subprocess.assert_any_call(
-            ['svn', 'export', repo_url, '-r', branch], cwd=clone_dir, stderr=subprocess.STDOUT
+            ['svn', 'export', repo_url, '-r', branch], cwd=clone_dir,
+            stderr=subprocess.STDOUT
         )
     else:
         mock_subprocess.assert_any_call(
             [repo_class.cmd, 'clone', repo_url], cwd=clone_dir, stderr=subprocess.STDOUT
         )
         mock_subprocess.assert_any_call(
-            [repo_class.cmd, 'checkout', branch], cwd=expected_repo_dir, stderr=subprocess.STDOUT
+            [repo_class.cmd, 'checkout', branch], cwd=expected_repo_dir,
+            stderr=subprocess.STDOUT
         )
 
 
@@ -179,7 +182,10 @@ def test_clone_handles_branch_typo(mocker, clone_dir, error_message):
 
 
 def test_clone_unknown_clone_error(mocker, clone_dir):
-    """In `clone()`, unknown subprocess errors should be raised as RepositoryCloneFailed."""
+    """
+    In `clone()`, unknown subprocess errors should be raised as
+    RepositoryCloneFailed.
+    """
     mocker.patch(
         'cookiecutter.vcs.subprocess.check_output',
         autospec=True,

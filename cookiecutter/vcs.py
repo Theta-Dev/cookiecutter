@@ -28,7 +28,7 @@ class _VCS:
     @classmethod
     def is_installed(cls):
         """
-        Checks if VCS is installed
+        Check if VCS is installed.
 
         :return: (bool) is_installed
         """
@@ -37,7 +37,7 @@ class _VCS:
     @staticmethod
     def get_repo_dir(repo_name, clone_to_dir):
         """
-        Gets the path of the cloned repository
+        Get the path of the cloned repository.
 
         :return: repo_dir
         """
@@ -46,7 +46,7 @@ class _VCS:
     @classmethod
     def clone(cls, repo_url, checkout, clone_to_dir, repo_dir):
         """
-        Clones the repository
+        Clone the repository.
 
         :param repo_url: Repository URL
         :param checkout: Branch/Revision to check out
@@ -68,7 +68,7 @@ class _VCS:
 
 
 class Git(_VCS):
-    """Git VCS class"""
+    """Git VCS class."""
     cmd = 'git'
 
     @staticmethod
@@ -78,12 +78,12 @@ class Git(_VCS):
 
 
 class Hg(_VCS):
-    """Mercury VCS class"""
+    """Mercury VCS class."""
     cmd = 'hg'
 
 
 class SVN(_VCS):
-    """Subversion VCS class"""
+    """Subversion VCS class."""
     cmd = 'svn'
 
     @classmethod
@@ -177,7 +177,8 @@ def clone(repo_url, checkout=None, clone_to_dir='.', no_input=False):
                     'The {} branch of repository {} could not found, '
                     'have you made a typo?'.format(checkout, repo_url)
                 )
-            raise RepositoryCloneFailed('Cloning of Repository {} returned an error:\n{}'
-                                        .format(repo_url, output))
+            raise RepositoryCloneFailed(
+                'Cloning of Repository {} returned an error:\n{}'
+                .format(repo_url, output))
 
     return repo_dir
