@@ -14,15 +14,12 @@ from cookiecutter.utils import make_sure_path_exists, prompt_and_delete
 
 logger = logging.getLogger(__name__)
 
-BRANCH_ERRORS = [
-    'error: pathspec',
-    'unknown revision',
-    'No such revision'
-]
+BRANCH_ERRORS = ['error: pathspec', 'unknown revision', 'No such revision']
 
 
 class _VCS:
     """Abstract base VCS class. Handles the cloning of VCS repositories."""
+
     cmd = 'xyz'
 
     @classmethod
@@ -69,6 +66,7 @@ class _VCS:
 
 class Git(_VCS):
     """Git VCS class."""
+
     cmd = 'git'
 
     @staticmethod
@@ -84,11 +82,13 @@ class Git(_VCS):
 
 class Hg(_VCS):
     """Mercury VCS class."""
+
     cmd = 'hg'
 
 
 class SVN(_VCS):
     """Subversion VCS class."""
+
     cmd = 'svn'
 
     @classmethod
@@ -111,11 +111,7 @@ class SVN(_VCS):
 
 
 # Mapping VCS classes to their identifiers
-REPO_TYPES = {
-    'git': Git,
-    'hg': Hg,
-    'svn': SVN
-}
+REPO_TYPES = {'git': Git, 'hg': Hg, 'svn': SVN}
 
 
 def identify_repo(repo_url):
@@ -192,7 +188,9 @@ def clone(repo_url, checkout=None, clone_to_dir='.', no_input=False):
                     'have you made a typo?'.format(checkout, repo_url)
                 )
             raise RepositoryCloneFailed(
-                'Cloning of Repository {} returned an error:\n{}'
-                .format(repo_url, output))
+                'Cloning of Repository {} returned an error:\n{}'.format(
+                    repo_url, output
+                )
+            )
 
     return repo_dir
