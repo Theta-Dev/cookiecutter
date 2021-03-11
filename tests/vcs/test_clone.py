@@ -127,6 +127,7 @@ def test_clone_should_invoke_vcs_command(
         "fatal: repository 'https://github.com/hackebro/cookiedozer' not found"
             .encode('utf-8'),
         'hg: abort: HTTP Error 404: Not Found'.encode('utf-8'),
+        "svn: E160013: '/svn/no/path' path not found".encode('utf-8')
     ],
 )
 def test_clone_handles_repo_typo(mocker, clone_dir, error_message):
@@ -153,9 +154,11 @@ def test_clone_handles_repo_typo(mocker, clone_dir, error_message):
 @pytest.mark.parametrize(
     'error_message',
     [
-        "error: pathspec 'unknown_branch' did not match any file(s) known to git"
-            .encode('utf-8'),
+        (
+            "error: pathspec 'unknown_branch' did not match any file(s) known to git"
+        ).encode('utf-8'),
         "hg: abort: unknown revision 'unknown_branch'!".encode('utf-8'),
+        "svn: E160006: No such revision 99999".encode('utf-8')
     ],
 )
 def test_clone_handles_branch_typo(mocker, clone_dir, error_message):
@@ -183,9 +186,8 @@ def test_clone_handles_branch_typo(mocker, clone_dir, error_message):
 
 
 def test_clone_unknown_clone_error(mocker, clone_dir):
-    """
-    In clone(), unknown subprocess errors should be raised as RepositoryCloneFailed.
-    """
+    """In clone(), unknown subprocess errors should be raised as \
+    RepositoryCloneFailed"""
     mocker.patch(
         'cookiecutter.vcs.subprocess.check_output',
         autospec=True,
