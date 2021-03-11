@@ -17,7 +17,7 @@ def clone_dir(tmpdir):
 def test_clone_should_raise_if_vcs_not_installed(mocker, clone_dir):
     """In `clone()`, a `VCSNotInstalled` exception should be raised if no VCS \
     is installed."""
-    mocker.patch('cookiecutter.vcs.is_vcs_installed', autospec=True, return_value=False)
+    mocker.patch('cookiecutter.vcs.Git.is_installed', autospec=True, return_value=False)
 
     repo_url = 'https://github.com/pytest-dev/cookiecutter-pytest-plugin.git'
 
@@ -28,7 +28,7 @@ def test_clone_should_raise_if_vcs_not_installed(mocker, clone_dir):
 def test_clone_should_rstrip_trailing_slash_in_repo_url(mocker, clone_dir):
     """In `clone()`, repo URL's trailing slash should be stripped if one is \
     present."""
-    mocker.patch('cookiecutter.vcs.is_vcs_installed', autospec=True, return_value=True)
+    mocker.patch('cookiecutter.vcs.Git.is_installed', autospec=True, return_value=True)
 
     mock_subprocess = mocker.patch(
         'cookiecutter.vcs.subprocess.check_output', autospec=True,
@@ -46,7 +46,7 @@ def test_clone_should_rstrip_trailing_slash_in_repo_url(mocker, clone_dir):
 def test_clone_should_abort_if_user_does_not_want_to_reclone(mocker, tmpdir):
     """In `clone()`, if user doesn't want to reclone, Cookiecutter should exit \
     without cloning anything."""
-    mocker.patch('cookiecutter.vcs.is_vcs_installed', autospec=True, return_value=True)
+    mocker.patch('cookiecutter.vcs.Git.is_installed', autospec=True, return_value=True)
     mocker.patch(
         'cookiecutter.vcs.prompt_and_delete', side_effect=SystemExit, autospec=True
     )
@@ -67,17 +67,18 @@ def test_clone_should_abort_if_user_does_not_want_to_reclone(mocker, tmpdir):
 
 
 @pytest.mark.parametrize(
-    'repo_type, repo_url, repo_name',
+    'repo_class, repo_url, repo_name',
     [
-        ('git', 'https://github.com/hello/world.git', 'world'),
-        ('hg', 'https://bitbucket.org/foo/bar', 'bar'),
-        ('git', 'git@host:gitoliterepo', 'gitoliterepo'),
-        ('git', 'git@gitlab.com:cookiecutter/cookiecutter.git', 'cookiecutter'),
-        ('git', 'git@github.com:cookiecutter/cookiecutter.git', 'cookiecutter'),
+        (vcs.Git, 'https://github.com/hello/world.git', 'world'),
+        (vcs.Hg, 'https://bitbucket.org/foo/bar', 'bar'),
+        (vcs.SVN, 'http://svn.apache.org/viewvc/xml/axkit/trunk/axkit.org/examples', 'examples'),
+        (vcs.Git, 'git@host:gitoliterepo', 'gitoliterepo'),
+        (vcs.Git, 'git@gitlab.com:cookiecutter/cookiecutter.git', 'cookiecutter'),
+        (vcs.Git, 'git@github.com:cookiecutter/cookiecutter.git', 'cookiecutter'),
     ],
 )
 def test_clone_should_invoke_vcs_command(
-    mocker, clone_dir, repo_type, repo_url, repo_name
+    mocker, clone_dir, repo_class, repo_url, repo_name
 ):
     """When `clone()` is called with a git/hg repo, the corresponding VCS \
     command should be run via `subprocess.check_output()`.
@@ -86,7 +87,8 @@ def test_clone_should_invoke_vcs_command(
     * In the correct dir
     * With the correct args.
     """
-    mocker.patch('cookiecutter.vcs.is_vcs_installed', autospec=True, return_value=True)
+    mocker.patch(repo_class.__module__ + '.' + repo_class.__name__ + '.is_installed',
+                 autospec=True, return_value=True)
 
     mock_subprocess = mocker.patch(
         'cookiecutter.vcs.subprocess.check_output', autospec=True,
@@ -101,12 +103,17 @@ def test_clone_should_invoke_vcs_command(
 
     assert repo_dir == expected_repo_dir
 
-    mock_subprocess.assert_any_call(
-        [repo_type, 'clone', repo_url], cwd=clone_dir, stderr=subprocess.STDOUT
-    )
-    mock_subprocess.assert_any_call(
-        [repo_type, 'checkout', branch], cwd=expected_repo_dir, stderr=subprocess.STDOUT
-    )
+    if repo_class.cmd == 'svn':
+        mock_subprocess.assert_any_call(
+            ['svn', 'export', repo_url, '-r', branch], cwd=clone_dir, stderr=subprocess.STDOUT
+        )
+    else:
+        mock_subprocess.assert_any_call(
+            [repo_class.cmd, 'clone', repo_url], cwd=clone_dir, stderr=subprocess.STDOUT
+        )
+        mock_subprocess.assert_any_call(
+            [repo_class.cmd, 'checkout', branch], cwd=expected_repo_dir, stderr=subprocess.STDOUT
+        )
 
 
 @pytest.mark.parametrize(
