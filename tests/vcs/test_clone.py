@@ -17,7 +17,8 @@ def clone_dir(tmpdir):
 def test_clone_should_raise_if_vcs_not_installed(mocker, clone_dir):
     """In `clone()`, a `VCSNotInstalled` exception should be raised if no VCS \
     is installed."""
-    mocker.patch('cookiecutter.vcs.Git.is_installed', autospec=True, return_value=False)
+    mocker.patch('cookiecutter.vcs.Git.is_installed', autospec=True,
+                 return_value=False)
 
     repo_url = 'https://github.com/pytest-dev/cookiecutter-pytest-plugin.git'
 
@@ -111,7 +112,8 @@ def test_clone_should_invoke_vcs_command(
         )
     else:
         mock_subprocess.assert_any_call(
-            [repo_class.cmd, 'clone', repo_url], cwd=clone_dir, stderr=subprocess.STDOUT
+            [repo_class.cmd, 'clone', repo_url], cwd=clone_dir,
+            stderr=subprocess.STDOUT
         )
         mock_subprocess.assert_any_call(
             [repo_class.cmd, 'checkout', branch], cwd=expected_repo_dir,
@@ -122,9 +124,8 @@ def test_clone_should_invoke_vcs_command(
 @pytest.mark.parametrize(
     'error_message',
     [
-        (
-                "fatal: repository 'https://github.com/hackebro/cookiedozer' not found"
-        ).encode('utf-8'),
+        "fatal: repository 'https://github.com/hackebro/cookiedozer' not found"
+            .encode('utf-8'),
         'hg: abort: HTTP Error 404: Not Found'.encode('utf-8'),
     ],
 )
@@ -183,8 +184,7 @@ def test_clone_handles_branch_typo(mocker, clone_dir, error_message):
 
 def test_clone_unknown_clone_error(mocker, clone_dir):
     """
-    In `clone()`, unknown subprocess errors should be raised as
-    RepositoryCloneFailed.
+    In clone(), unknown subprocess errors should be raised as RepositoryCloneFailed.
     """
     mocker.patch(
         'cookiecutter.vcs.subprocess.check_output',
