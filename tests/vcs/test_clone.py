@@ -78,7 +78,7 @@ def test_clone_should_abort_if_user_does_not_want_to_reclone(mocker, tmpdir):
     ],
 )
 def test_clone_should_invoke_vcs_command(
-    mocker, clone_dir, repo_class, repo_url, repo_name
+        mocker, clone_dir, repo_class, repo_url, repo_name
 ):
     """When `clone()` is called with a git/hg repo, the corresponding VCS \
     command should be run via `subprocess.check_output()`.
@@ -120,7 +120,7 @@ def test_clone_should_invoke_vcs_command(
     'error_message',
     [
         (
-            "fatal: repository 'https://github.com/hackebro/cookiedozer' not found"
+                "fatal: repository 'https://github.com/hackebro/cookiedozer' not found"
         ).encode('utf-8'),
         'hg: abort: HTTP Error 404: Not Found'.encode('utf-8'),
     ],
@@ -150,7 +150,7 @@ def test_clone_handles_repo_typo(mocker, clone_dir, error_message):
     'error_message',
     [
         (
-            "error: pathspec 'unknown_branch' did not match any file(s) known to git"
+                "error: pathspec 'unknown_branch' did not match any file(s) known to git"
         ).encode('utf-8'),
         "hg: abort: unknown revision 'unknown_branch'!".encode('utf-8'),
     ],
@@ -179,8 +179,8 @@ def test_clone_handles_branch_typo(mocker, clone_dir, error_message):
     ).format(repository_url)
 
 
-def test_clone_unknown_subprocess_error(mocker, clone_dir):
-    """In `clone()`, unknown subprocess errors should be raised."""
+def test_clone_unknown_clone_error(mocker, clone_dir):
+    """In `clone()`, unknown subprocess errors should be raised as RepositoryCloneFailed."""
     mocker.patch(
         'cookiecutter.vcs.subprocess.check_output',
         autospec=True,
@@ -191,9 +191,13 @@ def test_clone_unknown_subprocess_error(mocker, clone_dir):
         ],
     )
 
-    with pytest.raises(subprocess.CalledProcessError):
+    repository_url = 'https://github.com/pytest-dev/cookiecutter-pytest-plugin'
+    with pytest.raises(exceptions.RepositoryCloneFailed) as err:
         vcs.clone(
-            'https://github.com/pytest-dev/cookiecutter-pytest-plugin',
+            repository_url,
             clone_to_dir=clone_dir,
             no_input=True,
         )
+    assert str(err.value) == (
+        'Cloning of Repository {} returned an error:\nSomething went wrong'
+    ).format(repository_url)
