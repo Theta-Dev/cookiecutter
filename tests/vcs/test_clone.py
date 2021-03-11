@@ -149,9 +149,8 @@ def test_clone_handles_repo_typo(mocker, clone_dir, error_message):
 @pytest.mark.parametrize(
     'error_message',
     [
-        (
-                "error: pathspec 'unknown_branch' did not match any file(s) known to git"
-        ).encode('utf-8'),
+        "error: pathspec 'unknown_branch' did not match any file(s) known to git"
+            .encode('utf-8'),
         "hg: abort: unknown revision 'unknown_branch'!".encode('utf-8'),
     ],
 )
